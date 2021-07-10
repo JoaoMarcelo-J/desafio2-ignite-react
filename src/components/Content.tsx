@@ -21,25 +21,42 @@ interface GenreResponseProps {
   title: string;
 }
 
-type ContentProps = {
-  property: {
-    selectedGenre: GenreResponseProps;
-    movies: MovieProps[];
-  };
-};
+interface ContentProps {
+  selectedGenreId: number;
+}
 
 export function Content(props: ContentProps) {
+  const [movies, setMovies] = useState<MovieProps[]>([]);
+
+  const [selectedGenre, setSelectedGenre] = useState<GenreResponseProps>(
+    {} as GenreResponseProps
+  );
+
+  useEffect(() => {
+    api
+      .get<MovieProps[]>(`movies/?Genre_id=${props.selectedGenreId}`)
+      .then((response) => {
+        setMovies(response.data);
+      });
+
+    api
+      .get<GenreResponseProps>(`genres/${props.selectedGenreId}`)
+      .then((response) => {
+        setSelectedGenre(response.data);
+      });
+  }, [props.selectedGenreId]);
+
   return (
     <div className="container">
       <header>
         <span className="category">
-          Categoria:<span> {props.property.selectedGenre.title}</span>
+          Categoria:<span> {selectedGenre.title}</span>
         </span>
       </header>
 
       <main>
         <div className="movies-list">
-          {props.property.movies.map((movie) => (
+          {movies.map((movie) => (
             <MovieCard
               key={movie.imdbID}
               title={movie.Title}
